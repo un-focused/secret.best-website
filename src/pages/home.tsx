@@ -50,6 +50,8 @@ export default function Home() {
         payload.set('file', file);
         payload.set('password', password);
 
+        // TODO: encrypt the payload
+
         return axios.post(
             'https://localhost:7227/api/SBFiles',
             payload
@@ -73,16 +75,16 @@ export default function Home() {
 
     return (
         <Box>
-            <Paper elevation={0}
+            <Paper
+                elevation={0}
                 sx={
                     {
                         padding: '1em',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px  '
+                        gap: '10px'
                     }
-                }
-            >
+                }>
                 <Typography variant="h4" gutterBottom>
                     Add your secret
                 </Typography>
@@ -94,8 +96,7 @@ export default function Home() {
                             width: '80%',
                             margin: 'auto'
                         }
-                    }
-                >
+                    }>
                     Upload Secret File
                     <input
                         type="file"
