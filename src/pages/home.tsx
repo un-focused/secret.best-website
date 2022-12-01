@@ -1,7 +1,8 @@
 import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useState } from "react";
-import axios from 'axios';
+import axios from '../resources/axiosInstance';
+import { encryptFileContents, getFileExtension } from "../actions/File";
 
 export default function Home() {
     const [showPassword, setShowPassword] = useState(false);
@@ -44,16 +45,19 @@ export default function Home() {
         setSecretFile(file);
     }
 
-    const uploadFile = (file: File, password: string) => {
-        const payload = new FormData();
-
-        payload.set('file', file);
-        payload.set('password', password);
-
-        // TODO: encrypt the payload
+    const uploadFile = async (file: File, password: string) => {
+        const result = await encryptFileContents(file, password);
+        const encryptedData = JSON.stringify(result);
+        const extension = getFileExtension(file);
+        const payload = {
+            name: file.name,
+            password,
+            extension,
+            encryptedData
+        };
 
         return axios.post(
-            'https://localhost:7227/api/SBFiles',
+            'SBFiles',
             payload
         );
     }
@@ -76,7 +80,7 @@ export default function Home() {
     return (
         <Box>
             <Paper
-                elevation={0}
+                elevation={4}
                 sx={
                     {
                         padding: '1em',
