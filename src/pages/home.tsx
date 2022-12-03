@@ -50,9 +50,7 @@ export default function Home() {
         console.log('URL BEFORE', window.URL.createObjectURL(file));
         const encryptedData = JSON.stringify(result);
         const extension = getFileExtension(file);
-        const dF = await decryptFileContents(result, {extension: '', name: ''}, password);
-
-        // new TextDecoder().decode(cipherText)
+        // const dF = await decryptFileContents(result, {extension: '', name: ''}, password);
 
         console.log('RESULT', JSON.stringify(result));
         console.log('DECRYPT', dF);
