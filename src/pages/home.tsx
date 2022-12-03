@@ -2,7 +2,7 @@ import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useState } from "react";
 import axios from '../resources/axiosInstance';
-import { encryptFileContents, getFileExtension } from "../actions/File";
+import { decryptFileContents, encryptFileContents, getFileExtension } from "../actions/File";
 
 export default function Home() {
     const [showPassword, setShowPassword] = useState(false);
@@ -47,8 +47,18 @@ export default function Home() {
 
     const uploadFile = async (file: File, password: string) => {
         const result = await encryptFileContents(file, password);
+        console.log('URL BEFORE', window.URL.createObjectURL(file));
         const encryptedData = JSON.stringify(result);
         const extension = getFileExtension(file);
+        const dF = await decryptFileContents(result, {extension: '', name: ''}, password);
+
+        // new TextDecoder().decode(cipherText)
+
+        console.log('RESULT', JSON.stringify(result));
+        console.log('DECRYPT', dF);
+
+        const url = window.URL.createObjectURL(dF);
+        console.log(url);
         const payload = {
             name: file.name,
             password,
@@ -56,10 +66,10 @@ export default function Home() {
             encryptedData
         };
 
-        return axios.post(
-            'SBFiles',
-            payload
-        );
+        // return axios.post(
+        //     'SBFiles',
+        //     payload
+        // );
     }
 
     const handleSubmit = async () => {
