@@ -19,13 +19,13 @@ export const loadFileAsBuffer = (file: File): Promise<ArrayBuffer> => {
 }
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
-const stringToUint8Array = (data: string) => {
+export const stringToUint8Array = (data: string) => {
     const encoder = new TextEncoder();
 
     return encoder.encode(data);
 }
 
-const uint8ArrayToString = (data: Uint8Array) => {
+export const bufferSourceToString = (data: BufferSource) => {
     const decoder = new TextDecoder();
 
     return decoder.decode(data);

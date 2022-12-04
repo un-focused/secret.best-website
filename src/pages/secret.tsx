@@ -3,7 +3,7 @@ import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, Outli
 import { useEffect, useState } from "react";
 import axios from '../resources/axiosInstance';
 import { useLocation, useParams } from "react-router-dom";
-import { decryptFileContents, EncryptedData, Metadata } from "../actions/File";
+import { decryptFileContents, EncryptedData, Metadata, stringToUint8Array } from "../actions/File";
 
 interface SBFile {
     name: string;
@@ -48,16 +48,17 @@ export default function Secret() {
             extension
         }
 
-        const parsedEncryptedData = JSON.parse(stringifiedEncryptedData);
-        const encryptedData: EncryptedData = {
-            cipherText: new TextEncoder().encode(parsedEncryptedData.cipherText),
-            iv: parsedEncryptedData.iv,
+        const { cipherText, iv } = JSON.parse(stringifiedEncryptedData) as {
+            cipherText: string;
+            iv: Uint8Array;
         }
-        console.log('data', stringifiedEncryptedData);
-        console.log('encrypt data', encryptedData);
-        const result = await decryptFileContents(encryptedData, metadata, password);
-
-        console.log('{RESULT}', result);
+        const encryptedData: EncryptedData = {
+            cipherText: stringToUint8Array(cipherText),
+            iv
+        };
+        console.log("BEFORE FAIL", encryptedData);
+        const file = await decryptFileContents(encryptedData, metadata, password);
+        console.log("AFTER FAIL", window.URL.createObjectURL(file));
     }
 
     const handleDownload = async () => {
