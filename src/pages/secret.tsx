@@ -36,6 +36,18 @@ export default function Secret() {
         event.preventDefault();
     }
 
+    const stringifiedArrayToArray = (data: object) => {
+        const arr = new Array(Object.keys(data).length);
+
+        for (const [key, value] of Object.entries(data)) {
+            const index = +key;
+
+            arr[index] = value;
+        }
+
+        return arr;
+    }
+
     const getFile = async (password: string) => {
         const { data } = await axios.post(`SBFiles/${ id }`,
             {
@@ -48,15 +60,18 @@ export default function Secret() {
             extension
         }
 
-        const { cipherText, iv } = JSON.parse(stringifiedEncryptedData) as {
-            cipherText: string;
-            iv: Uint8Array;
+        const parsedEncryptedData = JSON.parse(stringifiedEncryptedData) as {
+            cipherText: object;
+            iv: object;
         }
+        
+        const decodedArr = stringifiedArrayToArray(parsedEncryptedData.cipherText);
+        const iv = stringifiedArrayToArray(parsedEncryptedData.iv);
         const encryptedData: EncryptedData = {
-            cipherText: stringToUint8Array(cipherText),
-            iv
+            cipherText: new Uint16Array(decodedArr),
+            iv: new Uint8Array(iv)
         };
-        console.log("BEFORE FAIL", encryptedData);
+
         const file = await decryptFileContents(encryptedData, metadata, password);
         console.log("AFTER FAIL", window.URL.createObjectURL(file));
     }

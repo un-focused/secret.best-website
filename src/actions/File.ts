@@ -69,7 +69,7 @@ const deriveKeyFromPassword = async (password: string) => {
 }
 
 export interface EncryptedData {
-    cipherText: ArrayBuffer;
+    cipherText: Uint16Array;
     iv: Uint8Array;
 }
 
@@ -91,7 +91,8 @@ export const encryptData = async(buffer: ArrayBuffer, password: string): Promise
     // 3. "generate" the key from the password, derive it
     const key = await deriveKeyFromPassword(password);
     // 4. encrypt the file contents
-    const cipherText = await crypto.subtle.encrypt(algorithm, key, buffer);
+    const cipherTextBuffer = await crypto.subtle.encrypt(algorithm, key, buffer);
+    const cipherText = new Uint16Array(cipherTextBuffer);
 
     // 5. return the encrypted data & the initilization vector
     return {

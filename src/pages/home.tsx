@@ -48,7 +48,7 @@ export default function Home() {
     const uploadFile = async (file: File, password: string) => {
         const { cipherText, iv } = await encryptFileContents(file, password);
         const encryptedData = {
-            cipherText: new Uint16Array(cipherText),
+            cipherText,
             iv
         };
         const extension = getFileExtension(file);
@@ -57,54 +57,27 @@ export default function Home() {
             name: file.name,
             password,
             extension,
-            encryptedData
+            encryptedData: JSON.stringify(encryptedData)
         };
 
-        console.log('cipherText og buff', cipherText);
-        console.log('cipherText', new Uint16Array(cipherText));
-        console.log('cipherText buff', new Uint16Array(cipherText).buffer);
-        console.log('stringed', JSON.stringify(payload.encryptedData));
-        const decodedDataA = JSON.parse(JSON.stringify(payload.encryptedData));
-        console.log('PARSED JSON', decodedDataA);
-        // const originalCT = new Uint16Array(decodedDataA.cipherText);
+        const { data } = await axios.post('SBFiles', payload);
 
-        // console.log('cipherText AFTER CONVERSION', originalCT);
-        // console.log('cipherText AFTER CONVERSION', originalCT.buffer);
-        console.log('decodedDataA.cipherText', Object.keys(decodedDataA.cipherText).length);
-        const arr = new Array();
-        for (const [key, value] of Object.entries(decodedDataA.cipherText)) {
-            const index = +key;
-
-            arr[index] = value;
-        }
-
-        console.log('arr', arr);
-        const f = await decryptFileContents(
-            {
-                cipherText: new Uint16Array(arr).buffer,
-                iv
-            }, { name: 'x', extension: 'txt'}, password);
-        console.log('file', window.URL.createObjectURL(f));
-
-        // const { data } = await axios.post('SBFiles', payload);
-
-        // return data;
+        return data;
     }
 
     const handleSubmit = async () => {
-        await uploadFile(cipherFile!, 'a');
-        // if (!cipherFile || !secretFile) {
-        //     return;
-        // }
+        if (!cipherFile || !secretFile) {
+            return;
+        }
 
-        // const results = await Promise.all(
-        //     [
-        //         uploadFile(cipherFile, password),
-        //         uploadFile(secretFile, password),
-        //     ]
-        // );
+        const results = await Promise.all(
+            [
+                uploadFile(cipherFile, password),
+                uploadFile(secretFile, password),
+            ]
+        );
 
-        // console.log(results);
+        console.log(results);
     }
 
     return (
