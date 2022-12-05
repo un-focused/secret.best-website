@@ -2,8 +2,8 @@ import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from '../resources/axiosInstance';
-import { useLocation, useParams } from "react-router-dom";
-import { decryptFileContents, EncryptedData, Metadata, stringToUint8Array } from "../actions/File";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { decryptFileContents, EncryptedData, jsonArrayToArray, Metadata, stringToUint8Array } from "../actions/File";
 
 interface SBFile {
     name: string;
@@ -11,16 +11,39 @@ interface SBFile {
     encryptedData: string;
 }
 
+interface IncomingEncryptedData {
+    cipherText: {
+        [key: string]: string;
+    };
+    iv: {
+        [key: string]: string;
+    }
+}
+
 export default function Secret() {
+    const navigate = useNavigate();
     const params = useParams();
-    const location = useLocation();
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
+    const [fileExists, setFileExists] = useState(false);
+    // TODO: use snackbar
+    const [errorMessage, setErrorMessage] = useState('');
     
     const { id } = params;
 
-    console.log('params', params);
-    console.log('location', location);
+    useEffect(
+        () => {
+            if (!id || isNaN(+id)) {
+                setFileExists(false);
+                return;
+            }
+
+            checkFileExists(+id).then(
+                (result) => setFileExists(result)
+            )
+        },
+        [id]
+    );
 
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -36,18 +59,17 @@ export default function Secret() {
         event.preventDefault();
     }
 
-    const stringifiedArrayToArray = (data: object) => {
-        const arr = new Array(Object.keys(data).length);
+    const checkFileExists = async(id: number) => {
+        try {
+            await axios.get(`SBFiles/exists/${ id }`);
 
-        for (const [key, value] of Object.entries(data)) {
-            const index = +key;
-
-            arr[index] = value;
+            return true;
+        } catch(error) {
+            return false;
         }
-
-        return arr;
     }
 
+    // TODO: handle errors
     const getFile = async (password: string) => {
         const { data } = await axios.post(`SBFiles/${ id }`,
             {
@@ -60,28 +82,65 @@ export default function Secret() {
             extension
         }
 
-        const parsedEncryptedData = JSON.parse(stringifiedEncryptedData) as {
-            cipherText: object;
-            iv: object;
-        }
-        
-        const decodedArr = stringifiedArrayToArray(parsedEncryptedData.cipherText);
-        const iv = stringifiedArrayToArray(parsedEncryptedData.iv);
+        const { cipherText: incomingCipherText, iv: incomingIV } = JSON.parse(stringifiedEncryptedData) as IncomingEncryptedData;
+        const cipherText = new Uint16Array(jsonArrayToArray(incomingCipherText));
+        const iv = new Uint8Array(jsonArrayToArray(incomingIV));
         const encryptedData: EncryptedData = {
-            cipherText: new Uint16Array(decodedArr),
-            iv: new Uint8Array(iv)
+            cipherText,
+            iv
         };
 
-        const file = await decryptFileContents(encryptedData, metadata, password);
-        console.log("AFTER FAIL", window.URL.createObjectURL(file));
+        return decryptFileContents(encryptedData, metadata, password);
     }
 
+    const handleHome = () => navigate('/');
+
+    // REFERENCE: https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     const handleDownload = async () => {
         if (!password) {
+            setErrorMessage('invalid password');
             return;
         }
 
-        const file = getFile(password);
+        const file = await getFile(password);
+        const fileURL = window.URL.createObjectURL(file);
+
+        const linkElement = document.createElement('a');
+
+        linkElement.href = fileURL;
+        linkElement.setAttribute('download', file.name);
+
+        document.body.appendChild(linkElement);
+
+        linkElement.click();
+
+        linkElement.parentNode?.removeChild(linkElement);
+    }
+
+    if (!fileExists) {
+        return (
+            <Box>
+                <Paper
+                    elevation={8}
+                    sx={
+                        {
+                            padding: '1em',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px'
+                        }
+                    }>
+                    <Typography variant="h4" gutterBottom>
+                        File not found
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        onClick={ handleHome }>
+                        Home
+                    </Button>
+                </Paper>
+            </Box>
+        );
     }
 
     return (

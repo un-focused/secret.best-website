@@ -2,7 +2,17 @@ import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useState } from "react";
 import axios from '../resources/axiosInstance';
-import { bufferSourceToString, decryptFileContents, encryptFileContents, getFileExtension, stringToUint8Array } from "../actions/File";
+import { encryptFileContents, getFileExtension, getFilename } from "../actions/File";
+
+// TODO: create requests & constants file
+// TODO: validate cipher file
+// TODO: add validation (password for instance)
+// TODO: break down into components
+// TODO: add 2MB file check
+// TODO: add jumbling logic (mapping)
+// TODO: validate jumbling file
+// TODO: make id's less predictible
+// TODO: generate password if don't want to put one in
 
 export default function Home() {
     const [showPassword, setShowPassword] = useState(false);
@@ -51,12 +61,16 @@ export default function Home() {
             cipherText,
             iv
         };
+        const name = getFilename(file);
         const extension = getFileExtension(file);
 
         const payload = {
-            name: file.name,
+            name,
             password,
             extension,
+            // we stringify the encrypted data so that we don't need to create a
+            // relation on the backend with an inner object that contains the
+            // encrypted data, this keeps the process simpler & nicer to work with
             encryptedData: JSON.stringify(encryptedData)
         };
 

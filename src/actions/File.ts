@@ -1,3 +1,4 @@
+// TODO: clean up this file (break into multiple & add comments)
 export const loadFileAsBuffer = (file: File): Promise<ArrayBuffer> => {
     return new Promise(
         (resolve, reject) => {
@@ -147,4 +148,27 @@ export const getFileExtension = (file: File) => {
     }
 
     return name.substring(lastDotIndex + 1);
+}
+
+export const getFilename = (file: File) => {
+    const { name } = file;
+    const lastDotIndex = name.lastIndexOf('.');
+
+    if (!lastDotIndex) {
+        return name;
+    }
+
+    return name.substring(0, lastDotIndex);
+}
+
+export const jsonArrayToArray = (data: object) => {
+    const array = new Array(Object.keys(data).length);
+
+    for (const [key, value] of Object.entries(data)) {
+        const index = +key;
+
+        array[index] = value;
+    }
+
+    return array;
 }
