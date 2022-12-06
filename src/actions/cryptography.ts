@@ -1,23 +1,6 @@
-// TODO: clean up this file (break into multiple & add comments)
-export const loadFileAsBuffer = (file: File): Promise<ArrayBuffer> => {
-    return new Promise(
-        (resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const data = event.target?.result;
-                
-                if (!data) {
-                    reject('no data in file');
-                    return;
-                }
-
-                resolve(data as ArrayBuffer);
-            }
-
-            reader.readAsArrayBuffer(file);
-        }
-    );
-}
+import EncryptedData from "../types/encryptedData";
+import Metadata from "../types/metadata";
+import { generateFilename, loadFileAsBuffer } from "./file";
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
 export const stringToUint8Array = (data: string) => {
@@ -69,16 +52,6 @@ const deriveKeyFromPassword = async (password: string) => {
     )
 }
 
-export interface EncryptedData {
-    cipherText: Uint16Array;
-    iv: Uint8Array;
-}
-
-export interface Metadata {
-    name: string;
-    extension: string;
-}
-
 export const encryptData = async(buffer: ArrayBuffer, password: string): Promise<EncryptedData> => {
     // 1. generate a 16 byte long initialization vector
     const iv = crypto.getRandomValues(new Uint8Array(16));
@@ -126,49 +99,10 @@ export const encryptFileContents = async (file: File, password: string): Promise
     return encryptData(buffer, password);
 }
 
-export const generateFilename = (name: string, extension: string) => `${ name }.${ extension }`;
-
 // REFERENCE: https://stackoverflow.com/questions/40680431/how-can-i-encrypt-decrypt-arbitrary-binary-files-using-javascript-in-the-browser
 export const decryptFileContents = async (data: EncryptedData, { name, extension }: Metadata, password: string) => {
     const decryptedContents = await decryptData(data, password);
     const filename = generateFilename(name, extension);
 
     return new File([decryptedContents], filename);
-}
-
-// REFERENCE: https://stackoverflow.com/questions/43708127/javascript-get-the-filename-and-extension-from-input-type-file
-export const getFileExtension = (file: File) => {
-    const { name } = file;
-    const lastDotIndex = name.lastIndexOf('.');
-
-    if (!lastDotIndex) {
-        throw {
-            message: 'no extension in file name'
-        };
-    }
-
-    return name.substring(lastDotIndex + 1);
-}
-
-export const getFilename = (file: File) => {
-    const { name } = file;
-    const lastDotIndex = name.lastIndexOf('.');
-
-    if (!lastDotIndex) {
-        return name;
-    }
-
-    return name.substring(0, lastDotIndex);
-}
-
-export const jsonArrayToArray = (data: object) => {
-    const array = new Array(Object.keys(data).length);
-
-    for (const [key, value] of Object.entries(data)) {
-        const index = +key;
-
-        array[index] = value;
-    }
-
-    return array;
 }

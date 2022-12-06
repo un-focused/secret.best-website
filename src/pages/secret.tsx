@@ -2,8 +2,11 @@ import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from '../resources/axiosInstance';
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { decryptFileContents, EncryptedData, jsonArrayToArray, Metadata, stringToUint8Array } from "../actions/File";
+import { useNavigate, useParams } from "react-router-dom";
+import Metadata from "../types/metadata";
+import EncryptedData from "../types/encryptedData";
+import { decryptFileContents } from "../actions/cryptography";
+import { jsonArrayToArray } from "../actions/json";
 
 interface SBFile {
     name: string;

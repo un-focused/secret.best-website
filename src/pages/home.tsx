@@ -2,7 +2,10 @@ import { VisibilityOff, Visibility } from "@mui/icons-material";
 import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
 import { useState } from "react";
 import axios from '../resources/axiosInstance';
-import { encryptFileContents, getFileExtension, getFilename } from "../actions/File";
+import { getFileExtension, getFilename } from "../actions/file";
+import { encryptFileContents } from "../actions/cryptography";
+import { isValidCipherMapFile } from "../actions/validation";
+import Snackbar, { Severity } from "../components/snackbar";
 
 // TODO: create requests & constants file
 // TODO: validate cipher file
@@ -19,7 +22,15 @@ export default function Home() {
     const [password, setPassword] = useState('');
     const [cipherFile, setCipherFile] = useState<File>();
     const [secretFile, setSecretFile] = useState<File>();
+    const [isOpen, setIsOpen] = useState(false);
+    const [severity, setSeverity] = useState<Severity>('error');
+    const [errorMessage, setErrorMessage] = useState('');
 
+    const setSnackbarData = (severity: Severity, message: string, isOpen = true) => {
+        setSeverity(severity);
+        setErrorMessage(message);
+        setIsOpen(isOpen);
+    }
 
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -35,18 +46,25 @@ export default function Home() {
         event.preventDefault();
     }
 
-    const handleUploadCipherFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUploadCipherFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files || event.target.files.length === 0) {
+            setSnackbarData('error', 'no file was found');
             return;
         }
 
         const file = event.target.files[0];
+        const isValid = await isValidCipherMapFile(file);
+        if (!isValid) {
+            setSnackbarData('error', 'invalid cipher file uploaded');
+            return;
+        }
         
         setCipherFile(file);
     }
 
     const handleUploadSecretFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files || event.target.files.length === 0) {
+            setSnackbarData('error', 'no file was found');
             return;
         }
 
@@ -81,6 +99,7 @@ export default function Home() {
 
     const handleSubmit = async () => {
         if (!cipherFile || !secretFile) {
+            setSnackbarData('error', 'you need to upload both the cipher & secret file');
             return;
         }
 
@@ -92,6 +111,7 @@ export default function Home() {
         );
 
         console.log(results);
+        setSnackbarData('success', 'congrats!!');
     }
 
     return (
@@ -173,6 +193,7 @@ export default function Home() {
                     Submit
                 </Button>
             </Paper>
+            <Snackbar isOpen={ isOpen } setIsOpen={ setIsOpen } severity={ severity } message={ errorMessage } />
         </Box>
     );
 }
