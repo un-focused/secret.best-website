@@ -1,5 +1,9 @@
 import { getCipherMapFromFile } from "./cryptography";
-import { getFileExtension, loadFileAsString } from "./file"
+import { getFileExtension } from "./file";
+
+export const isValidPassword = (password: string) => {
+    return password && password.length >= 6 && !password.includes(' ');
+}
 
 export const isValidCipherMapFile = async (file: File) => {
     const extension = getFileExtension(file);

@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import axios from '../resources/axiosInstance';
 import { getFileExtension, getFilename } from '../actions/file';
 import { encodeFile, encryptFileContents, getCipherMapFromFile } from '../actions/cryptography';
-import { isValidCipherMapFile } from '../actions/validation';
+import { isValidCipherMapFile, isValidPassword } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
 import CipherMap from '../types/cipherMap';
+import { generatePassword } from '../actions/generate';
+import AlertDialog from '../components/alertDialog';
 
 // TODO: create requests & constants file
 // TODO: validate cipher file
@@ -105,6 +107,17 @@ export default function Home() {
         if (!cipherFile || !secretFile) {
             setSnackbarData('error', 'you need to upload both the cipher & secret file');
             return;
+        }
+
+        if (!isValidPassword(password)) {
+            if (isCustomPassword) {
+                setSnackbarData('error', 'your password must be at least 6 characters long & not contain spaces');
+                return;
+            }
+            const generatedPassword = generatePassword();
+
+            // TODO: check if this gets run in a timely manner (race condition)
+            setPassword(generatedPassword);
         }
 
         const cipherMap = await getCipherMapFromFile(cipherFile);
@@ -263,6 +276,9 @@ export default function Home() {
                 setIsOpen={ setIsOpen }
                 severity={ severity }
                 message={ errorMessage } />
+            <AlertDialog
+                title='Success!'>
+            </AlertDialog>
         </Box>
     );
 }
