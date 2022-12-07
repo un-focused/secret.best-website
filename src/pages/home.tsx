@@ -6,6 +6,8 @@ import { getFileExtension, getFilename } from '../actions/file';
 import { encryptFileContents } from '../actions/cryptography';
 import { isValidCipherMapFile } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
+import { postSBFiles } from '../actions/request';
+import CipherMap from '../types/cipherMap';
 
 // TODO: create requests & constants file
 // TODO: validate cipher file
@@ -93,15 +95,10 @@ export default function Home() {
             name,
             password,
             extension,
-            // we stringify the encrypted data so that we don't need to create a
-            // relation on the backend with an inner object that contains the
-            // encrypted data, this keeps the process simpler & nicer to work with
             encryptedData: JSON.stringify(encryptedData)
         };
 
-        const { data } = await axios.post('SBFiles', payload);
-
-        return data;
+        return postSBFiles(payload);
     }
 
     const handleSubmit = async () => {

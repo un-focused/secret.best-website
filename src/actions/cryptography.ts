@@ -1,6 +1,7 @@
+import CipherMap from "../types/cipherMap";
 import EncryptedData from "../types/encryptedData";
 import Metadata from "../types/metadata";
-import { generateFilename, loadFileAsBuffer } from "./file";
+import { generateFilename, loadFileAsBuffer, loadFileAsString } from "./file";
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
 export const stringToUint8Array = (data: string) => {
@@ -105,4 +106,24 @@ export const decryptFileContents = async (data: EncryptedData, { name, extension
     const filename = generateFilename(name, extension);
 
     return new File([decryptedContents], filename);
+}
+
+export const encodeFile = async (file: File, cipherMap: CipherMap) => {
+    const contents = await loadFileAsString(file);
+    // deep copy the string to not affect the original
+    // REFERENCE: https://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-particular-index-in-javascript
+    let encodedContents = '';
+    for (const character of contents) {
+        const replacementCharacter = cipherMap[character] || character;
+
+        encodedContents += replacementCharacter;
+    }
+
+    const blob = new Blob([contents as BlobPart],
+        {
+            type: file.type
+        }
+    );
+
+    return new File([blob], file.name)
 }
