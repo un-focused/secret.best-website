@@ -1,4 +1,4 @@
-import { VisibilityOff, Visibility } from '@mui/icons-material';
+import { VisibilityOff, Visibility, PhotoCamera } from '@mui/icons-material';
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import axios from '../resources/axiosInstance';
@@ -122,31 +122,50 @@ export default function Home() {
     }
 
     return (
-        <Box>
+        <Box
+            sx = {
+                {
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }
+            }>
             <Paper
                 elevation={4}
                 sx={
                     {
+                        height: '60%',
+                        width: 'calc(100% - 200px)',
+                        marginTop: '100px',
                         padding: '2em',
                         display: 'flex',
-                        // width: '650px',
                         flexDirection: 'column',
-                        gap: '10px'
+                        gap: '15px'
                     }
                 }>
-                <Typography variant='h4' gutterBottom>
+                <Typography
+                    variant='h3'
+                    gutterBottom>
                     Create your secret
                 </Typography>
                 <Button
                     variant='text'
                     component='label'
+                    size = 'large'
+                    startIcon = { <PhotoCamera /> }
                     sx={
                         {
                             width: '80%',
                             margin: 'auto'
                         }
                     }>
-                    { secretFile && secretFile.name || '1. Upload Secret File' }
+                    <Typography
+                        variant='h5'
+                        gutterBottom>
+                        { secretFile && secretFile.name || '1. Upload Secret File' }
+                    </Typography>
                     <input
                         type='file'
                         onChange={ handleUploadSecretFile }
@@ -155,13 +174,19 @@ export default function Home() {
                 <Button
                     variant='text'
                     component='label'
+                    size = 'large'
+                    startIcon = { <PhotoCamera /> }
                     sx={
                         {
                             width: '80%',
                             margin: 'auto'
                         }
                     }>
-                    { cipherFile && cipherFile.name || '2. Upload Cipher File' }
+                    <Typography
+                        variant='h5'
+                        gutterBottom>
+                        { cipherFile && cipherFile.name || '2. Upload Cipher File' }
+                    </Typography>
                     <input
                         type='file'
                         onChange={ handleUploadCipherFile }
@@ -182,8 +207,7 @@ export default function Home() {
                     }
                     sx = {
                         {
-                            width: '80%',
-                            marginLeft: '5px'
+                            margin: 'auto'
                         }
                     }
                 />
@@ -211,10 +235,12 @@ export default function Home() {
                 }
                 <Button
                     variant='contained'
+                    size='large'
                     onClick={ handleSubmit }
                     sx= {
                         {
                             margin: 'auto',
+                            marginBottom: '0',
                             width: '40%'
                         }
                     }>
