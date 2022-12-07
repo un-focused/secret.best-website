@@ -142,8 +142,6 @@ Password: ${ password }`;
         const cipherMap = await getCipherMapFromFile(cipherFile);
         const encodedSecretFile = await encodeFile(secretFile, cipherMap);
 
-        console.log(window.URL.createObjectURL(encodedSecretFile));
-
         const [ciperFileResponse, secretFileResponse] = await Promise.all(
             [
                 uploadFile(cipherFile, submitPassword),

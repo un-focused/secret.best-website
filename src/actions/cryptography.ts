@@ -2,6 +2,7 @@ import CipherMap from "../types/cipherMap";
 import EncryptedData from "../types/encryptedData";
 import Metadata from "../types/metadata";
 import { duplicateFileWithNewContents, generateFilename, loadFileAsBuffer, loadFileAsString } from "./file";
+import { arrayBufferToUintArray } from "./json";
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
 export const stringToUint8Array = (data: string) => {
@@ -67,7 +68,7 @@ export const encryptData = async(buffer: ArrayBuffer, password: string): Promise
     const key = await deriveKeyFromPassword(password);
     // 4. encrypt the file contents
     const cipherTextBuffer = await crypto.subtle.encrypt(algorithm, key, buffer);
-    const cipherText = new Uint16Array(cipherTextBuffer);
+    const cipherText = arrayBufferToUintArray(cipherTextBuffer);
 
     // 5. return the encrypted data & the initilization vector
     return {
@@ -111,7 +112,7 @@ export const decryptFileContents = async (data: EncryptedData, { name, extension
 export const inverseCipherMap = (cipherMap: CipherMap) => {
     return Object.entries(cipherMap).reduce(
         (previous, [key, value]) => {
-            previous[value] = key;
+            previous[value] = +key;
 
             return previous;
         },
@@ -127,13 +128,16 @@ export const getCipherMapFromFile = async (file: File) => {
 
 export const encodeFile = async (file: File, cipherMap: CipherMap) => {
     const buffer = await loadFileAsBuffer(file);
-    const contents = new Uint16Array(buffer);
-    // const array = stringToUint8Array(contents);
+    console.log(buffer);
+    const contents = arrayBufferToUintArray(buffer);
 
-    // file.text();
     const encodedContents = contents.map(
         // cannot use number as key (JSON) so implict conversion to string
-        (value) => +cipherMap[value] || value
+        (value) => {
+            const mappedValue = +cipherMap[value];
+
+            return isNaN(mappedValue) ? value : mappedValue;
+        }
     );
 
     const f = new File([encodedContents], file.name, {
@@ -149,9 +153,9 @@ export const encodeFile = async (file: File, cipherMap: CipherMap) => {
 
     return f;
 
-    // const newFile = duplicateFileWithNewContents(file, contents);
+//     const newFile = duplicateFileWithNewContents(file, contents);
 
-    // return newFile;
+//     return newFile;
 }
 
 export const decodeFile = async (file: File, cipherMap: CipherMap) => {

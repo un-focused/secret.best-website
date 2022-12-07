@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Metadata from "../types/metadata";
 import EncryptedData from "../types/encryptedData";
 import { decryptFileContents } from "../actions/cryptography";
-import { jsonArrayToArray } from "../actions/json";
+import { arrayBufferToUintArray, jsonArrayToArray } from "../actions/json";
 import { downloadFile } from "../actions/file";
 import Snackbar, { Severity } from "../components/snackbar";
 import { getSBFileExists } from "../actions/request";
@@ -55,6 +55,12 @@ export default function Secret() {
         [id]
     );
 
+    const setSnackbarData = (severity: Severity, message: string, isOpen = true) => {
+        setSeverity(severity);
+        setErrorMessage(message);
+        setIsSnackbarOpen(isOpen);
+    }
+
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
 
@@ -83,7 +89,7 @@ export default function Secret() {
         }
 
         const { cipherText: incomingCipherText, iv: incomingIV } = JSON.parse(stringifiedEncryptedData) as IncomingEncryptedData;
-        const cipherText = new Uint16Array(jsonArrayToArray(incomingCipherText));
+        const cipherText = arrayBufferToUintArray(jsonArrayToArray(incomingCipherText));
         const iv = new Uint8Array(jsonArrayToArray(incomingIV));
         const encryptedData: EncryptedData = {
             cipherText,
@@ -102,39 +108,66 @@ export default function Secret() {
             return;
         }
 
-        const file = await getFile(password);
+        // TODO: throw proper errors (handle validation, maybe validation errors??)
+        // TODO: 500 errors (currently thrown) on backend need to be sent as proper errors
+        try {
+            const file = await getFile(password);
 
-        downloadFile(file);
+            downloadFile(file);
+
+            navigate('/decipher');
+        } catch(error) {
+            const { message } = error as Error;
+
+            setSnackbarData('error', message);
+        }
     }
 
     if (!fileExists) {
         return (
             <Box
-                // sx = {
-                //     {
-                //         height: '100%',
-                //         width: '100%',
-                //         display: 'flex',
-                //         alignItems: 'center',
-                //         justifyContent: 'center'
-                //     }
-                // }
-                >
+                sx = {
+                    {
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }
+                }>
                 <Paper
                     elevation={8}
                     sx={
                         {
-                            padding: '1em',
+                            height: '60%',
+                            width: 'calc(80% - 200px)',
+                            marginTop: '100px',
+                            padding: '1.3em',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '10px'
+                            gap: '15px'
                         }
                     }>
-                    <Typography variant="h4" gutterBottom>
+                    <Typography
+                        variant='h3'
+                        sx = {
+                            {
+                                marginBottom: '10px'
+                            }
+                        }>
                         File not found
                     </Typography>
                     <Button
                         variant="contained"
+                        size='large'
+                        sx= {
+                            {
+                                margin: 'auto',
+                                marginTop: '10px',
+                                marginBottom: '0',
+                                width: '50%'
+                            }
+                        }
                         onClick={ handleHome }>
                         Home
                     </Button>
@@ -214,7 +247,7 @@ export default function Secret() {
                             width: '50%'
                         }
                     }>
-                    Decipher
+                    Download
                 </Button>
             </Paper>
             <Snackbar

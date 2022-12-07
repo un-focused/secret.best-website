@@ -9,3 +9,16 @@ export const jsonArrayToArray = (data: object) => {
 
     return array;
 }
+
+export const arrayBufferToUintArray = (buffer: ArrayBuffer) => {
+    try {
+        return new Uint32Array(buffer);
+    } catch(error) {}
+
+    try {
+        return new Uint16Array(buffer);
+    } catch(error) {}
+
+    // last one, so throwing error is fine as it is a failed force "cast"!
+    return new Uint8Array(buffer);
+}

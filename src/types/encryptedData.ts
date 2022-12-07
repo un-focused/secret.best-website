@@ -1,4 +1,4 @@
 export default interface EncryptedData {
-    cipherText: Uint16Array;
+    cipherText: Uint8Array | Uint16Array | Uint32Array;
     iv: Uint8Array;
 };

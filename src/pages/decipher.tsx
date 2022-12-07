@@ -10,7 +10,7 @@ import Snackbar, { Severity } from '../components/snackbar';
 // TODO: add validation (password for instance)
 // TODO: break down into components
 
-export default function Home() {
+export default function Decipher() {
     const [cipherFile, setCipherFile] = useState<File>();
     const [secretFile, setSecretFile] = useState<File>();
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
