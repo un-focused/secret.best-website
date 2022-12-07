@@ -1,4 +1,4 @@
-export const loadFileAsString = (file: File): Promise<string> => {
+export const loadFileAsString = (file: File, encoding = 'utf-8'): Promise<string> => {
     return new Promise(
         (resolve, reject) => {
             const reader = new FileReader();
@@ -14,7 +14,7 @@ export const loadFileAsString = (file: File): Promise<string> => {
                 resolve(data as string);
             }
 
-            reader.readAsText(file);
+            reader.readAsText(file, encoding);
         }
     );
 }
@@ -70,7 +70,8 @@ export const getFilename = (file: File) => {
 
 // not a complete implementation
 export const duplicateFileWithNewContents = ({ type, name }: File, contents: string | BlobPart) => {
-    const blob = new Blob([contents as BlobPart],
+    console.log('ccc', contents);
+    const blob = new Blob([contents],
         {
             type
         }

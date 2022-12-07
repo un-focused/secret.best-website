@@ -108,7 +108,7 @@ export default function Home() {
         }
 
         const cipherMap = await getCipherMapFromFile(cipherFile);
-        const encodedSecretFile = await encodeFile(cipherFile, cipherMap);
+        const encodedSecretFile = await encodeFile(secretFile, cipherMap);
 
         console.log(window.URL.createObjectURL(encodedSecretFile));
 
