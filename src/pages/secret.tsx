@@ -7,6 +7,7 @@ import Metadata from "../types/metadata";
 import EncryptedData from "../types/encryptedData";
 import { decryptFileContents } from "../actions/cryptography";
 import { jsonArrayToArray } from "../actions/json";
+import { downloadFile } from "../actions/file";
 
 interface SBFile {
     name: string;
@@ -106,18 +107,8 @@ export default function Secret() {
         }
 
         const file = await getFile(password);
-        const fileURL = window.URL.createObjectURL(file);
 
-        const linkElement = document.createElement('a');
-
-        linkElement.href = fileURL;
-        linkElement.setAttribute('download', file.name);
-
-        document.body.appendChild(linkElement);
-
-        linkElement.click();
-
-        linkElement.parentNode?.removeChild(linkElement);
+        downloadFile(file);
     }
 
     if (!fileExists) {

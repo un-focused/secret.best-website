@@ -1,6 +1,10 @@
 import { getCipherMapFromFile } from "./cryptography";
 import { getFileExtension } from "./file";
 
+export const isValidFile = (file: File, maxSize = Number.MAX_VALUE) => {
+    return file.size <= maxSize;
+}
+
 export const isValidPassword = (password: string) => {
     return password && password.length >= 6 && !password.includes(' ');
 }

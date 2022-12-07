@@ -3,7 +3,7 @@ import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogCont
 import React, { useState } from 'react';
 import { getFileExtension, getFilename } from '../actions/file';
 import { encodeFile, encryptFileContents, getCipherMapFromFile } from '../actions/cryptography';
-import { isValidCipherMapFile, isValidPassword } from '../actions/validation';
+import { isValidCipherMapFile, isValidFile, isValidPassword } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
 import { generatePassword } from '../actions/generate';
@@ -12,9 +12,7 @@ import { copyTextToClipboard } from '../actions/clipboard';
 // TODO: create constants file
 // TODO: add validation (password for instance)
 // TODO: break down into components
-// TODO: add 2MB file check
 // TODO: make id's less predictible
-// TODO: generate password if don't want to put one in
 
 export default function Home() {
     const [isCustomPassword, setIsCustomPassword] = useState(false);
@@ -28,6 +26,22 @@ export default function Home() {
     const [errorMessage, setErrorMessage] = useState('');
     const [cipherFileID, setCipherFileID] = useState('');
     const [secretFileID, setSecretFileID] = useState('');
+
+    // TODO: make function better
+    const validateInputFile = (files: FileList | null) => {
+        if (!files || files.length === 0) {
+            setSnackbarData('error', 'no file was found');
+            return;
+        }
+    
+        const file = files[0];
+        if (!isValidFile(file, 2097152)) {
+            setSnackbarData('error', 'file is too large < 2MiB');
+            return;
+        }
+
+        return file;
+    }
 
     const setSnackbarData = (severity: Severity, message: string, isOpen = true) => {
         setSeverity(severity);
@@ -67,14 +81,13 @@ Password: ${ password }`;
     }
 
     const handleUploadCipherFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files || event.target.files.length === 0) {
-            setSnackbarData('error', 'no file was found');
+        const file = validateInputFile(event.target.files);
+        if (!file) {
             return;
         }
 
-        const file = event.target.files[0];
-        const isValid = await isValidCipherMapFile(file);
-        if (!isValid) {
+        const isValidMap = await isValidCipherMapFile(file);
+        if (!isValidMap) {
             setSnackbarData('error', 'invalid cipher file uploaded');
             return;
         }
@@ -83,12 +96,10 @@ Password: ${ password }`;
     }
 
     const handleUploadSecretFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files || event.target.files.length === 0) {
-            setSnackbarData('error', 'no file was found');
+        const file = validateInputFile(event.target.files);
+        if (!file) {
             return;
         }
-
-        const file = event.target.files[0];
 
         setSecretFile(file);
     }
@@ -183,6 +194,7 @@ Password: ${ password }`;
                     variant='text'
                     component='label'
                     size = 'large'
+                    // TODO: can upload other files so consider different icon
                     endIcon = { <PhotoCamera/> }
                     sx={
                         {

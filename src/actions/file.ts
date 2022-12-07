@@ -62,3 +62,22 @@ export const duplicateFileWithNewContents = ({ type, name }: File, contents: str
 
     return new File([blob], name);
 }
+
+export const downloadFile = (file: File) => {
+    const url = window.URL.createObjectURL(file);
+
+    downloadLink(url, file.name);
+}
+
+export const downloadLink = (url: string, name: string) => {
+    const linkElement = document.createElement('a');
+
+    linkElement.href = url;
+    linkElement.setAttribute('download', name);
+
+    document.body.appendChild(linkElement);
+
+    linkElement.click();
+
+    linkElement.parentNode?.removeChild(linkElement);
+}
