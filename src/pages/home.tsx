@@ -7,16 +7,12 @@ import { isValidCipherMapFile, isValidPassword } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
 import { generatePassword } from '../actions/generate';
-import AlertDialog from '../components/alertDialog';
 import { copyTextToClipboard } from '../actions/clipboard';
 
-// TODO: create requests & constants file
-// TODO: validate cipher file
+// TODO: create constants file
 // TODO: add validation (password for instance)
 // TODO: break down into components
 // TODO: add 2MB file check
-// TODO: add jumbling logic (mapping)
-// TODO: validate jumbling file
 // TODO: make id's less predictible
 // TODO: generate password if don't want to put one in
 
