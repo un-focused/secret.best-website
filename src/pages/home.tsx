@@ -108,15 +108,14 @@ export default function Home() {
             return;
         }
 
-        if (!isValidPassword(password)) {
-            if (isCustomPassword) {
-                setSnackbarData('error', 'your password must be at least 6 characters long & not contain spaces');
-                return;
-            }
-            const generatedPassword = generatePassword();
-
-            // TODO: check if this gets run in a timely manner (race condition)
-            setPassword(generatedPassword);
+        // password generated will override typed password
+        let submitPassword = password;
+        if (isCustomPassword && !isValidPassword(password)) {
+            setSnackbarData('error', 'your password must be at least 6 characters long & not contain spaces');
+            return;
+        } else {
+            submitPassword = generatePassword();
+            setPassword(submitPassword);
         }
 
         const cipherMap = await getCipherMapFromFile(cipherFile);
@@ -126,8 +125,8 @@ export default function Home() {
 
         const results = await Promise.all(
             [
-                uploadFile(cipherFile, password),
-                uploadFile(encodedSecretFile, password),
+                uploadFile(cipherFile, submitPassword),
+                uploadFile(encodedSecretFile, submitPassword),
             ]
         );
 
