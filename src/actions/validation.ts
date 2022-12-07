@@ -12,7 +12,7 @@ export const isValidCipherMapFile = async (file: File) => {
         const data = await getCipherMapFromFile(file);
 
         for (const value of Object.values(data)) {
-            if (typeof value !== 'string') {
+            if (typeof value !== 'number') {
                 return false;
             }
         }

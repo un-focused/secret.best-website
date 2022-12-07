@@ -126,16 +126,32 @@ export const getCipherMapFromFile = async (file: File) => {
 }
 
 export const encodeFile = async (file: File, cipherMap: CipherMap) => {
-    const contents = await loadFileAsString(file);
-    // REFERENCE: https://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-particular-index-in-javascript
-    // const encodedContents = contents.split('').reduce(
-    //     (previous, current) => previous + (cipherMap[current] || current),
-    //     ''
-    // );
+    const buffer = await loadFileAsBuffer(file);
+    const contents = new Uint16Array(buffer);
+    // const array = stringToUint8Array(contents);
 
-    const newFile = duplicateFileWithNewContents(file, contents);
+    // file.text();
+    const encodedContents = contents.map(
+        // cannot use number as key (JSON) so implict conversion to string
+        (value) => +cipherMap[value] || value
+    );
 
-    return newFile;
+    const f = new File([encodedContents], file.name, {
+        type: file.type
+    })
+
+    console.log('BEFORE', await file.arrayBuffer());
+
+    console.log('DEBUG', contents);
+    console.log('DEBUG', encodedContents);
+
+    console.log('AFTER', await f.arrayBuffer());
+
+    return f;
+
+    // const newFile = duplicateFileWithNewContents(file, contents);
+
+    // return newFile;
 }
 
 export const decodeFile = async (file: File, cipherMap: CipherMap) => {
