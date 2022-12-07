@@ -1,22 +1,5 @@
-export const loadFileAsString = (file: File, encoding = 'utf-8'): Promise<string> => {
-    return new Promise(
-        (resolve, reject) => {
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                const data = event.target?.result;
-                
-                if (!data) {
-                    reject('no data in file');
-                    return;
-                }
-
-                resolve(data as string);
-            }
-
-            reader.readAsText(file, encoding);
-        }
-    );
+export const loadFileAsString = (file: File) => {
+    return file.text();
 }
 
 // TODO: clean up this file (break into multiple & add comments)
