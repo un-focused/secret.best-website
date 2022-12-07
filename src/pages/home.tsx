@@ -1,11 +1,11 @@
-import { VisibilityOff, Visibility } from "@mui/icons-material";
-import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from "@mui/material";
-import { useState } from "react";
+import { VisibilityOff, Visibility } from '@mui/icons-material';
+import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from '@mui/material';
+import React, { useState } from 'react';
 import axios from '../resources/axiosInstance';
-import { getFileExtension, getFilename } from "../actions/file";
-import { encryptFileContents } from "../actions/cryptography";
-import { isValidCipherMapFile } from "../actions/validation";
-import Snackbar, { Severity } from "../components/snackbar";
+import { getFileExtension, getFilename } from '../actions/file';
+import { encryptFileContents } from '../actions/cryptography';
+import { isValidCipherMapFile } from '../actions/validation';
+import Snackbar, { Severity } from '../components/snackbar';
 
 // TODO: create requests & constants file
 // TODO: validate cipher file
@@ -18,6 +18,7 @@ import Snackbar, { Severity } from "../components/snackbar";
 // TODO: generate password if don't want to put one in
 
 export default function Home() {
+    const [isCustomPassword, setIsCustomPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [cipherFile, setCipherFile] = useState<File>();
@@ -44,6 +45,12 @@ export default function Home() {
 
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
+    }
+
+    const handleUseCustomPassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.checked;
+
+        setIsCustomPassword(value);
     }
 
     const handleUploadCipherFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,80 +127,105 @@ export default function Home() {
                 elevation={4}
                 sx={
                     {
-                        padding: '1em',
+                        padding: '2em',
                         display: 'flex',
+                        // width: '650px',
                         flexDirection: 'column',
                         gap: '10px'
                     }
                 }>
-                <Typography variant="h4" gutterBottom>
-                    Add your secret
+                <Typography variant='h4' gutterBottom>
+                    Create your secret
                 </Typography>
                 <Button
-                    variant="text"
-                    component="label"
+                    variant='text'
+                    component='label'
                     sx={
                         {
                             width: '80%',
                             margin: 'auto'
                         }
                     }>
-                    Upload Secret File
+                    { secretFile && secretFile.name || '1. Upload Secret File' }
                     <input
-                        type="file"
+                        type='file'
                         onChange={ handleUploadSecretFile }
                         hidden />
                 </Button>
-                <Typography variant="body1" gutterBottom>
-                    No secret file
-                </Typography>
                 <Button
-                    variant="text"
-                    component="label"
+                    variant='text'
+                    component='label'
                     sx={
                         {
                             width: '80%',
                             margin: 'auto'
                         }
                     }>
-                    Upload Cipher File
+                    { cipherFile && cipherFile.name || '2. Upload Cipher File' }
                     <input
-                        type="file"
+                        type='file'
                         onChange={ handleUploadCipherFile }
                         hidden />
                 </Button>
-                <Typography variant="body1" gutterBottom>
-                    No cipher file
-                </Typography>
-                <FormControl sx={{ m: 1, width: '50ch' }} variant="outlined">
-                    <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-                    <OutlinedInput
-                        id="outlined-adornment-password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={handlePasswordChange}
-                        endAdornment={
-                            <InputAdornment position="end">
-                                <IconButton
-                                    aria-label="toggle password visibility"
-                                    onClick={handleClickShowPassword}
-                                    onMouseDown={handleMouseDownPassword}
-                                    edge="end"
-                                >
-                                    { showPassword ? <VisibilityOff /> : <Visibility /> }
-                                </IconButton>
-                            </InputAdornment>
+                <FormControlLabel
+                    label = 'Use Custom Password'
+                    control = {
+                        <Checkbox
+                            value = { isCustomPassword }
+                            onChange = { handleUseCustomPassword }
+                            inputProps = {
+                                {
+                                    'aria-label': 'Use custom password'
+                                }
+                            }
+                        />
+                    }
+                    sx = {
+                        {
+                            width: '80%',
+                            marginLeft: '5px'
                         }
-                        label="Password"
-                    />
-                </FormControl>
+                    }
+                />
+                { isCustomPassword &&
+                    <FormControl variant='outlined'>
+                        <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
+                        <OutlinedInput
+                            id='outlined-adornment-password'
+                            type={ showPassword ? 'text' : 'password' }
+                            value={ password }
+                            onChange={ handlePasswordChange }
+                            endAdornment={
+                                <InputAdornment position='end'>
+                                    <IconButton
+                                        aria-label='toggle password visibility'
+                                        onClick={ handleClickShowPassword }
+                                        onMouseDown={ handleMouseDownPassword }
+                                        edge='end'>
+                                        { showPassword ? <VisibilityOff /> : <Visibility /> }
+                                    </IconButton>
+                                </InputAdornment>
+                            }
+                            label='Password' />
+                    </FormControl>
+                }
                 <Button
-                    variant="contained"
-                    onClick={ handleSubmit }>
+                    variant='contained'
+                    onClick={ handleSubmit }
+                    sx= {
+                        {
+                            margin: 'auto',
+                            width: '40%'
+                        }
+                    }>
                     Submit
                 </Button>
             </Paper>
-            <Snackbar isOpen={ isOpen } setIsOpen={ setIsOpen } severity={ severity } message={ errorMessage } />
+            <Snackbar
+                isOpen={ isOpen }
+                setIsOpen={ setIsOpen }
+                severity={ severity }
+                message={ errorMessage } />
         </Box>
     );
 }
