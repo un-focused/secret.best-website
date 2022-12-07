@@ -1,7 +1,7 @@
 import CipherMap from "../types/cipherMap";
 import EncryptedData from "../types/encryptedData";
 import Metadata from "../types/metadata";
-import { duplicateFileWithNewContents, generateFilename, loadFileAsBuffer, loadFileAsString } from "./file";
+import { base64ToBlob, duplicateFileWithNewContents, generateFilename, getBase64StringFromDataURL, isImageFile, loadFileAsBuffer, loadFileAsDataURL, loadFileAsString } from "./file";
 import { arrayBufferToUintArray } from "./json";
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
@@ -112,7 +112,7 @@ export const decryptFileContents = async (data: EncryptedData, { name, extension
 export const inverseCipherMap = (cipherMap: CipherMap) => {
     return Object.entries(cipherMap).reduce(
         (previous, [key, value]) => {
-            previous[value] = +key;
+            previous[value] = key;
 
             return previous;
         },
@@ -126,36 +126,46 @@ export const getCipherMapFromFile = async (file: File) => {
     return JSON.parse(data) as CipherMap;
 }
 
+// TODO: fix trouble with JPEG files in that it ruins the encoding somehow?
+export const encodeImageFile = async (file: File, cipherMap: CipherMap) => {
+    const dataURL = await loadFileAsDataURL(file);
+    const base64String = getBase64StringFromDataURL(dataURL);
+
+    const encodedContents = base64String.split('').map(
+        // cannot use number as key (JSON) so implict conversion to string
+        (value) => cipherMap[value] || value
+    ).join('');
+
+    // console.log(base64String);
+    // console.log(encodedContents);
+
+    const blob = base64ToBlob(encodedContents, file.type);
+    const newFile = duplicateFileWithNewContents(file, blob);
+
+    return newFile;
+}
+
+// TODO: fix trouble with JPEG files in that it ruins the encoding somehow?
+// TODO: handle binary files
 export const encodeFile = async (file: File, cipherMap: CipherMap) => {
+    if (isImageFile(file)) {
+        return encodeImageFile(file, cipherMap);
+    }
+
     const buffer = await loadFileAsBuffer(file);
-    console.log(buffer);
     const contents = arrayBufferToUintArray(buffer);
 
-    const encodedContents = contents.map(
-        // cannot use number as key (JSON) so implict conversion to string
-        (value) => {
-            const mappedValue = +cipherMap[value];
+    // TODO: make generic binary encoding system
+    const encodedContents = contents;
 
-            return isNaN(mappedValue) ? value : mappedValue;
-        }
-    );
+    // const encodedContents = contents.map(
+    //     // cannot use number as key (JSON) so implict conversion to string
+    //     (value) => cipherMap[value] || value
+    // );
 
-    const f = new File([encodedContents], file.name, {
-        type: file.type
-    })
+    const newFile = duplicateFileWithNewContents(file, encodedContents);
 
-    console.log('BEFORE', await file.arrayBuffer());
-
-    console.log('DEBUG', contents);
-    console.log('DEBUG', encodedContents);
-
-    console.log('AFTER', await f.arrayBuffer());
-
-    return f;
-
-//     const newFile = duplicateFileWithNewContents(file, contents);
-
-//     return newFile;
+    return newFile;
 }
 
 export const decodeFile = async (file: File, cipherMap: CipherMap) => {
@@ -163,3 +173,5 @@ export const decodeFile = async (file: File, cipherMap: CipherMap) => {
 
     return encodeFile(file, inversedCipherMap);
 }
+
+// TODO: consider making own file format!

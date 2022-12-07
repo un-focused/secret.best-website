@@ -91,6 +91,7 @@ export default function Secret() {
         const { cipherText: incomingCipherText, iv: incomingIV } = JSON.parse(stringifiedEncryptedData) as IncomingEncryptedData;
         const cipherText = arrayBufferToUintArray(jsonArrayToArray(incomingCipherText));
         const iv = new Uint8Array(jsonArrayToArray(incomingIV));
+        console.log(cipherText);
         const encryptedData: EncryptedData = {
             cipherText,
             iv
