@@ -137,9 +137,9 @@ export default function Home() {
                 sx={
                     {
                         height: '60%',
-                        width: 'calc(100% - 200px)',
+                        width: 'calc(80% - 200px)',
                         marginTop: '100px',
-                        padding: '2em',
+                        padding: '1.3em',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '15px'
@@ -147,14 +147,18 @@ export default function Home() {
                 }>
                 <Typography
                     variant='h3'
-                    gutterBottom>
+                    sx = {
+                        {
+                            marginBottom: '10px'
+                        }
+                    }>
                     Create your secret
                 </Typography>
                 <Button
                     variant='text'
                     component='label'
                     size = 'large'
-                    startIcon = { <PhotoCamera /> }
+                    endIcon = { <PhotoCamera/> }
                     sx={
                         {
                             width: '80%',
@@ -162,8 +166,7 @@ export default function Home() {
                         }
                     }>
                     <Typography
-                        variant='h5'
-                        gutterBottom>
+                        variant='h6'>
                         { secretFile && secretFile.name || '1. Upload Secret File' }
                     </Typography>
                     <input
@@ -175,7 +178,7 @@ export default function Home() {
                     variant='text'
                     component='label'
                     size = 'large'
-                    startIcon = { <PhotoCamera /> }
+                    endIcon = { <PhotoCamera /> }
                     sx={
                         {
                             width: '80%',
@@ -183,8 +186,7 @@ export default function Home() {
                         }
                     }>
                     <Typography
-                        variant='h5'
-                        gutterBottom>
+                        variant='h6'>
                         { cipherFile && cipherFile.name || '2. Upload Cipher File' }
                     </Typography>
                     <input
@@ -212,7 +214,13 @@ export default function Home() {
                     }
                 />
                 { isCustomPassword &&
-                    <FormControl variant='outlined'>
+                    <FormControl variant='outlined'
+                        sx = {
+                            {
+                                width: '50%',
+                                margin: 'auto'
+                            }
+                        }>
                         <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
                         <OutlinedInput
                             id='outlined-adornment-password'
@@ -240,8 +248,9 @@ export default function Home() {
                     sx= {
                         {
                             margin: 'auto',
+                            marginTop: '10px',
                             marginBottom: '0',
-                            width: '40%'
+                            width: '50%'
                         }
                     }>
                     Submit
