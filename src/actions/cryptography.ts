@@ -1,7 +1,7 @@
 import CipherMap from "../types/cipherMap";
 import EncryptedData from "../types/encryptedData";
 import Metadata from "../types/metadata";
-import { generateFilename, loadFileAsBuffer, loadFileAsString } from "./file";
+import { duplicateFileWithNewContents, generateFilename, loadFileAsBuffer, loadFileAsString } from "./file";
 
 // REFERENCE: https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
 export const stringToUint8Array = (data: string) => {
@@ -108,22 +108,39 @@ export const decryptFileContents = async (data: EncryptedData, { name, extension
     return new File([decryptedContents], filename);
 }
 
+export const inverseCipherMap = (cipherMap: CipherMap) => {
+    return Object.entries(cipherMap).reduce(
+        (previous, [key, value]) => {
+            previous[value] = key;
+
+            return previous;
+        },
+        {} as CipherMap
+    );
+}
+
+export const getCipherMapFromFile = async (file: File) => {
+    const data = await loadFileAsString(file);
+
+    return JSON.parse(data) as CipherMap;
+}
+
 export const encodeFile = async (file: File, cipherMap: CipherMap) => {
     const contents = await loadFileAsString(file);
-    // deep copy the string to not affect the original
     // REFERENCE: https://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-particular-index-in-javascript
-    let encodedContents = '';
-    for (const character of contents) {
-        const replacementCharacter = cipherMap[character] || character;
-
-        encodedContents += replacementCharacter;
-    }
-
-    const blob = new Blob([contents as BlobPart],
-        {
-            type: file.type
-        }
+    const encodedContents = contents.split('').reduce(
+        (previous, character) => cipherMap[character] || character
     );
 
-    return new File([blob], file.name)
+    console.log(encodedContents);
+
+    const newFile = duplicateFileWithNewContents(file, encodedContents);
+
+    return newFile;
+}
+
+export const decodeFile = async (file: File, cipherMap: CipherMap) => {
+    const inversedCipherMap = inverseCipherMap(cipherMap);
+
+    return encodeFile(file, inversedCipherMap);
 }

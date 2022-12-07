@@ -3,7 +3,7 @@ import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, Input
 import React, { useState } from 'react';
 import axios from '../resources/axiosInstance';
 import { getFileExtension, getFilename } from '../actions/file';
-import { encryptFileContents } from '../actions/cryptography';
+import { encodeFile, encryptFileContents, getCipherMapFromFile } from '../actions/cryptography';
 import { isValidCipherMapFile } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
@@ -107,10 +107,15 @@ export default function Home() {
             return;
         }
 
+        const cipherMap = await getCipherMapFromFile(cipherFile);
+        const encodedSecretFile = await encodeFile(cipherFile, cipherMap);
+
+        console.log(window.URL.createObjectURL(encodedSecretFile));
+
         const results = await Promise.all(
             [
                 uploadFile(cipherFile, password),
-                uploadFile(secretFile, password),
+                uploadFile(encodedSecretFile, password),
             ]
         );
 

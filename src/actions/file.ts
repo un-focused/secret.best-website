@@ -67,3 +67,14 @@ export const getFilename = (file: File) => {
 
     return name.substring(0, lastDotIndex);
 }
+
+// not a complete implementation
+export const duplicateFileWithNewContents = ({ type, name }: File, contents: string | BlobPart) => {
+    const blob = new Blob([contents as BlobPart],
+        {
+            type
+        }
+    );
+
+    return new File([blob], name);
+}

@@ -1,8 +1,7 @@
-import CipherMap from "../types/cipherMap";
+import { getCipherMapFromFile } from "./cryptography";
 import { getFileExtension, loadFileAsString } from "./file"
 
 export const isValidCipherMapFile = async (file: File) => {
-    const data = await loadFileAsString(file);
     const extension = getFileExtension(file);
 
     if (extension !== 'json') {
@@ -10,9 +9,9 @@ export const isValidCipherMapFile = async (file: File) => {
     }
 
     try {
-        const contents = JSON.parse(data) as CipherMap;
+        const data = await getCipherMapFromFile(file);
 
-        for (const value of Object.values(contents)) {
+        for (const value of Object.values(data)) {
             if (typeof value !== 'string') {
                 return false;
             }
