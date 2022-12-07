@@ -6,13 +6,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 interface Props {
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  title: string;
-  body: string;
+    children?: React.ReactNode;
+    isOpen: boolean;
+    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    title: string;
 }
 
-const AlertDialog: React.FC<Props> = ({ isOpen, setIsOpen, title, body, children }) => {
+export default function AlertDialog({ children, isOpen, setIsOpen, title }: Props) {
     const handleClose = () => {
         setIsOpen(false);
     };
@@ -28,7 +28,7 @@ const AlertDialog: React.FC<Props> = ({ isOpen, setIsOpen, title, body, children
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    { body }
+                    { children }
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -42,5 +42,3 @@ const AlertDialog: React.FC<Props> = ({ isOpen, setIsOpen, title, body, children
         </Dialog>
     );
 }
-
-export default AlertDialog;

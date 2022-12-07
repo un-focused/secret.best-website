@@ -1,13 +1,11 @@
 import { VisibilityOff, Visibility, PhotoCamera } from '@mui/icons-material';
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import axios from '../resources/axiosInstance';
 import { getFileExtension, getFilename } from '../actions/file';
 import { encodeFile, encryptFileContents, getCipherMapFromFile } from '../actions/cryptography';
 import { isValidCipherMapFile, isValidPassword } from '../actions/validation';
 import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
-import CipherMap from '../types/cipherMap';
 import { generatePassword } from '../actions/generate';
 import AlertDialog from '../components/alertDialog';
 
@@ -27,14 +25,15 @@ export default function Home() {
     const [password, setPassword] = useState('');
     const [cipherFile, setCipherFile] = useState<File>();
     const [secretFile, setSecretFile] = useState<File>();
-    const [isOpen, setIsOpen] = useState(false);
+    const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+    const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
     const [severity, setSeverity] = useState<Severity>('error');
     const [errorMessage, setErrorMessage] = useState('');
 
     const setSnackbarData = (severity: Severity, message: string, isOpen = true) => {
         setSeverity(severity);
         setErrorMessage(message);
-        setIsOpen(isOpen);
+        setIsSnackbarOpen(isOpen);
     }
 
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,6 +133,7 @@ export default function Home() {
 
         console.log(results);
         setSnackbarData('success', 'congrats!!');
+        setIsAlertDialogOpen(true);
     }
 
     return (
@@ -272,12 +272,15 @@ export default function Home() {
                 </Button>
             </Paper>
             <Snackbar
-                isOpen={ isOpen }
-                setIsOpen={ setIsOpen }
+                isOpen={ isSnackbarOpen }
+                setIsOpen={ setIsSnackbarOpen }
                 severity={ severity }
                 message={ errorMessage } />
             <AlertDialog
+                isOpen={ isAlertDialogOpen }
+                setIsOpen={ setIsAlertDialogOpen }
                 title='Success!'>
+                    { password }
             </AlertDialog>
         </Box>
     );
