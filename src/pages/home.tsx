@@ -1,5 +1,5 @@
 import { VisibilityOff, Visibility, PhotoCamera } from '@mui/icons-material';
-import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from '@mui/material';
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, Paper, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { getFileExtension, getFilename } from '../actions/file';
 import { encodeFile, encryptFileContents, getCipherMapFromFile } from '../actions/cryptography';
@@ -8,6 +8,7 @@ import Snackbar, { Severity } from '../components/snackbar';
 import { postSBFiles } from '../actions/request';
 import { generatePassword } from '../actions/generate';
 import AlertDialog from '../components/alertDialog';
+import { copyTextToClipboard } from '../actions/clipboard';
 
 // TODO: create requests & constants file
 // TODO: validate cipher file
@@ -29,12 +30,25 @@ export default function Home() {
     const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
     const [severity, setSeverity] = useState<Severity>('error');
     const [errorMessage, setErrorMessage] = useState('');
+    const [cipherFileID, setCipherFileID] = useState('');
+    const [secretFileID, setSecretFileID] = useState('');
 
     const setSnackbarData = (severity: Severity, message: string, isOpen = true) => {
         setSeverity(severity);
         setErrorMessage(message);
         setIsSnackbarOpen(isOpen);
     }
+
+    const handleAlertDialogClose = () => setIsAlertDialogOpen(false);
+
+    const handleAlertDialogCopy = () => {
+        const contents = `Secret File: ${ window.location.origin }/secret/${ secretFileID }
+Cipher File: ${ window.location.origin }/secret/${ cipherFileID }
+Password: ${ password }`;
+
+        copyTextToClipboard(contents);
+        setSnackbarData('success', 'copied to clipboard');
+    };
 
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -123,14 +137,15 @@ export default function Home() {
 
         console.log(window.URL.createObjectURL(encodedSecretFile));
 
-        const results = await Promise.all(
+        const [ciperFileResponse, secretFileResponse] = await Promise.all(
             [
                 uploadFile(cipherFile, submitPassword),
                 uploadFile(encodedSecretFile, submitPassword),
             ]
         );
 
-        console.log(results);
+        setCipherFileID('' + ciperFileResponse.id);
+        setSecretFileID('' + secretFileResponse.id)
         setSnackbarData('success', 'congrats!!');
         setIsAlertDialogOpen(true);
     }
@@ -275,12 +290,42 @@ export default function Home() {
                 setIsOpen={ setIsSnackbarOpen }
                 severity={ severity }
                 message={ errorMessage } />
-            <AlertDialog
-                isOpen={ isAlertDialogOpen }
-                setIsOpen={ setIsAlertDialogOpen }
-                title='Success!'>
-                    { password }
-            </AlertDialog>
+            <Dialog
+                open={ isAlertDialogOpen }
+                onClose={ handleAlertDialogClose }
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description">
+                <DialogTitle>
+                    Success!
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        <p>
+                            <strong>Secret File: </strong>
+                            { `${ window.location.origin }/secret/${ secretFileID }` }
+                        </p>
+                        <p>
+                            <strong>Cipher File: </strong>
+                            { `${ window.location.origin }/secret/${ cipherFileID }` }
+                        </p>
+                        <p>
+                            <strong>Password: </strong>
+                            { password }
+                        </p>
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={ handleAlertDialogCopy }
+                        autoFocus>
+                        Copy
+                    </Button>
+                    <Button
+                        onClick={ handleAlertDialogClose }>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

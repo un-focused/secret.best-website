@@ -18,27 +18,6 @@ export default function AlertDialog({ children, isOpen, setIsOpen, title }: Prop
     };
 
     return (
-        <Dialog
-            open={ isOpen }
-            onClose={ handleClose }
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description">
-            <DialogTitle>
-                { title }
-            </DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    { children }
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={ handleClose } autoFocus>
-                    Copy
-                </Button>
-                <Button onClick={ handleClose }>
-                    Close
-                </Button>
-            </DialogActions>
-        </Dialog>
+        
     );
 }
