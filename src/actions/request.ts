@@ -12,3 +12,13 @@ export const postSBFiles = async (payload: SBFilesPostRequestBody) => {
 
     return data as SBFilesPostResponseBody;
 };
+
+export const getSBFileExists = async (id: number) => {
+    const { data } = await axios.get(`SBFiles/exists/${ id }`);
+
+    console.log('data', data);
+
+    // return true or false for exists as per the backend code
+    // true if successful response back otherwise error
+    return !!data;
+}

@@ -8,6 +8,10 @@ import EncryptedData from "../types/encryptedData";
 import { decryptFileContents } from "../actions/cryptography";
 import { jsonArrayToArray } from "../actions/json";
 import { downloadFile } from "../actions/file";
+import Snackbar, { Severity } from "../components/snackbar";
+import { getSBFileExists } from "../actions/request";
+
+// TODO: help dialog
 
 interface SBFile {
     name: string;
@@ -27,10 +31,12 @@ interface IncomingEncryptedData {
 export default function Secret() {
     const navigate = useNavigate();
     const params = useParams();
+
+    const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+    const [severity, setSeverity] = useState<Severity>('error');
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [fileExists, setFileExists] = useState(false);
-    // TODO: use snackbar
     const [errorMessage, setErrorMessage] = useState('');
     
     const { id } = params;
@@ -42,7 +48,7 @@ export default function Secret() {
                 return;
             }
 
-            checkFileExists(+id).then(
+            getSBFileExists(+id).then(
                 (result) => setFileExists(result)
             )
         },
@@ -61,16 +67,6 @@ export default function Secret() {
 
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
-    }
-
-    const checkFileExists = async(id: number) => {
-        try {
-            await axios.get(`SBFiles/exists/${ id }`);
-
-            return true;
-        } catch(error) {
-            return false;
-        }
     }
 
     // TODO: handle errors
@@ -113,7 +109,17 @@ export default function Secret() {
 
     if (!fileExists) {
         return (
-            <Box>
+            <Box
+                // sx = {
+                //     {
+                //         height: '100%',
+                //         width: '100%',
+                //         display: 'flex',
+                //         alignItems: 'center',
+                //         justifyContent: 'center'
+                //     }
+                // }
+                >
                 <Paper
                     elevation={8}
                     sx={
@@ -138,48 +144,84 @@ export default function Secret() {
     }
 
     return (
-        <Box>
+        <Box
+            sx = {
+                {
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }
+            }>
             <Paper
-                elevation={8}
+                elevation={4}
                 sx={
                     {
-                        padding: '1em',
+                        height: '60%',
+                        width: 'calc(80% - 200px)',
+                        marginTop: '100px',
+                        padding: '1.3em',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px'
+                        gap: '15px'
                     }
                 }>
-                <Typography variant="h4" gutterBottom>
+                <Typography
+                    variant='h3'
+                    sx = {
+                        {
+                            marginBottom: '10px'
+                        }
+                    }>
                     Get your file
                 </Typography>
-                <FormControl sx={{ m: 1, width: '50ch' }} variant="outlined">
-                    <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+                <FormControl variant='outlined'
+                    sx = {
+                        {
+                            width: '50%',
+                            margin: 'auto'
+                        }
+                    }>
+                    <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
                     <OutlinedInput
-                        id="outlined-adornment-password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={handlePasswordChange}
+                        id='outlined-adornment-password'
+                        type={ showPassword ? 'text' : 'password' }
+                        value={ password }
+                        onChange={ handlePasswordChange }
                         endAdornment={
-                            <InputAdornment position="end">
+                            <InputAdornment position='end'>
                                 <IconButton
-                                    aria-label="toggle password visibility"
-                                    onClick={handleClickShowPassword}
-                                    onMouseDown={handleMouseDownPassword}
-                                    edge="end"
-                                >
+                                    aria-label='toggle password visibility'
+                                    onClick={ handleClickShowPassword }
+                                    onMouseDown={ handleMouseDownPassword }
+                                    edge='end'>
                                     { showPassword ? <VisibilityOff /> : <Visibility /> }
                                 </IconButton>
                             </InputAdornment>
                         }
-                        label="Password"
-                    />
+                        label='Password' />
                 </FormControl>
                 <Button
-                    variant="contained"
-                    onClick={ handleDownload }>
-                    Download
+                    variant='contained'
+                    size='large'
+                    onClick={ handleDownload }
+                    sx= {
+                        {
+                            margin: 'auto',
+                            marginTop: '10px',
+                            marginBottom: '0',
+                            width: '50%'
+                        }
+                    }>
+                    Decipher
                 </Button>
             </Paper>
+            <Snackbar
+                isOpen={ isSnackbarOpen }
+                setIsOpen={ setIsSnackbarOpen }
+                severity={ severity }
+                message={ errorMessage } />
         </Box>
     );
 }
